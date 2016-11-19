@@ -12,9 +12,10 @@ $arr = $req->params;
 
 $teacherID = $arr->teacherID;
 
-$query = "SELECT a.*,b.title AS kcTitle        
+$query = "SELECT a.*,b.title AS kcTitle,b.subjectID,c.subjectName         
 	From `ghjy_one2n_course` a 
 	JOIN `ghjy_kclist` b On a.kclistID=b.kclistID  
+	Join `ghjy_subject` c On b.subjectID=c.subjectID 
 	Where a.teacherID = $teacherID And a.hour = 0   
 	Group By a.courseNo Order By a.created Desc";
 		

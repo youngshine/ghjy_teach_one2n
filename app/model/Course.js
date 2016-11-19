@@ -11,8 +11,11 @@ Ext.define('Youngshine.model.Course', {
 			{name: 'endTime'}, 
 			{name: 'kcTitle'}, //本课时对应的课程
 			{name: 'kclistID'}, 
-			{name: 'studentID'}, 
-			{name: 'studentName'}, 
+			{name: 'subjectID'}, 
+			{name: 'subjectName'}, 
+			{name: 'gradeID'}, 
+			//{name: 'studentID'}, 
+			//{name: 'studentName'}, 
 			//{name: 'wxID'}, //学生家长微信，公众号发模版消息
 			{name: 'teacherID'}, 
 			{name: 'teacherName'}, 

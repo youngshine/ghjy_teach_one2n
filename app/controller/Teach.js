@@ -151,7 +151,8 @@ Ext.define('Youngshine.controller.Teach', {
 		Ext.Viewport.setMasked({xtype:'loadmask',message:'正在加载'});
 		// 预先加载的数据
 		var obj = {
-			"courseNo": record.data.courseNo, //当前课时的练习题集
+			"courseNo" : record.data.courseNo, //当前课时的练习题集
+			"subjectID": record.data.subjectID, //学科，题库不同学科不同表table
 		}
 		var store = Ext.getStore('Topic'); 
 		store.getProxy().setUrl(me.getApplication().dataUrl + 
