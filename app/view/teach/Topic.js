@@ -21,8 +21,9 @@ Ext.define('Youngshine.view.teach.Topic', {
 			'<div style="text-align:center;font-size:0.8em;color:green;">{fullDone}</div></div>',
 		*/
 		itemTpl: '<div>' + 
+			'<div style="color:#888;font-size:0.9em;"><span>题目{gid}</span>' +
+			'<span class="answer" style="color:green;float:right;">{fullDone}</span></div>'+
 			'<div>{content}</div>' +
-			'<div style="color:orangered;text-align:right;font-size:0.8em;">{fullDone}</div>'+
 			'</div>',
 		
     	items: [{
@@ -32,7 +33,7 @@ Ext.define('Youngshine.view.teach.Topic', {
 			items: [{
 				ui : 'back',
 				action: 'back',
-				text : '课时列表',
+				text : '返回',
 				//iconCls: 'team',
 				handler: function(btn){
 					btn.up('list').onBack() //返回

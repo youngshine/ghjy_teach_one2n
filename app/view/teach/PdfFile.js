@@ -1,6 +1,7 @@
-Ext.define('Youngshine.view.teach.Pdf-file',{
+Ext.define('Youngshine.view.teach.PdfFile',{
 	extend: 'Ext.Container',
 	xtype: 'pdf-file',
+	
 	requires: ['Youngshine.view.teach.pdf.PDF'],
 	
 	config:{

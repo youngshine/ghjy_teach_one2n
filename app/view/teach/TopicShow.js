@@ -1,20 +1,12 @@
-Ext.define('Youngshine.view.teach.Topic-teach-show',{
+Ext.define('Youngshine.view.teach.TopicShow',{
 	extend: 'Ext.Container',
-	xtype: 'topic-teach-show',
+	xtype: 'topic-show',
 	
 	//requires: ['Ext.Img','Ext.ActionSheet'], 
 	
 	config: {
-/*        showAnimation: {
-            type: "slide",
-            direction: "left",
-            duration: 300
-        },
-        hideAnimation: {
-            type: "slide",
-            direction: "right",
-            duration: 300
-        }, */
+		parentRecord: null, //container保存数据记录setRecord
+		
 		//layout: 'vbox',
 		scrollable: true,
 		
@@ -72,7 +64,7 @@ Ext.define('Youngshine.view.teach.Topic-teach-show',{
 			itemId: 'topicInfo',
 			tpl: [
 				//'<div>帐号：{student_name}｛真实姓名：{realname}｝</div>',
-				'<div style="color:orangered;">题目［{gid}］</div>',
+				'<div style="color:#888;">题目{gid}</div>',
 				//'<div><img class=teach src="{pic_teach}" height=auto width=100% /></div>',
 				'<div>{content}</div>',
 				//'<div style="text-align:center;">难度：{fullLevel}</div>',
@@ -81,7 +73,7 @@ Ext.define('Youngshine.view.teach.Topic-teach-show',{
 				
 				'<div><hr></div>',
 				
-				'<div style="color:orangered;">答案</div>',
+				'<div style="color:#888;">答案</div>',
 				'<div>{answer}</div>',
 				//'<div><img class=answer src="{pic_teach_answer}" height=auto width=100% /></div>', //高度自动，宽度自动 height="100%" auto
 				
@@ -95,8 +87,6 @@ Ext.define('Youngshine.view.teach.Topic-teach-show',{
 			},
 
 		}],
-		
-		record: null, //container保存数据记录setRecord
 		
 		listeners: [{
 			delegate: 'button[action=delete]',
@@ -123,15 +113,15 @@ Ext.define('Youngshine.view.teach.Topic-teach-show',{
 	},
 	
 	// setRecord lead to this，更新页面显示
-	updateRecord: function(newRecord){
+	updateParentRecord: function(newRecord){
 		var me = this;
 		//alert(newRecord); // 有时控制器setrecord(record)，这个函数不运行？
 		if(newRecord){
 			console.log(newRecord.data);
 			this.down('panel[itemId=topicInfo]').setData(newRecord.data);
-			//
+			
 			var radioChecked = this.down('radiofield[value='+newRecord.data.done+']')
-			radioChecked.setChecked(true)
+			radioChecked.setChecked(true) //会触发评分update
 			
 			// 评分后，不能删除
 			me.setBtnDelete(newRecord.data.done)
@@ -148,7 +138,7 @@ Ext.define('Youngshine.view.teach.Topic-teach-show',{
 				handler: function(){
 					actionSheet.hide();
 					Ext.Viewport.remove(actionSheet,true); //移除dom
-					me.fireEvent('del', me.getRecord(),me);
+					me.fireEvent('del', me.me.getParentRecord()(),me);
 					//window.location ='tel:xxxxxxx';
 					//window.location = 'tel:' + phone;
 				}
@@ -165,13 +155,14 @@ Ext.define('Youngshine.view.teach.Topic-teach-show',{
 		Ext.Viewport.add(actionSheet);
 		actionSheet.show();	
 	},
+	
 	onDone: function(radio){
 		var me = this; 
 		//console.log(radio.getValue())
 		var done = radio.getValue(),
 			fullDone = radio.getLabel()
 		me.setBtnDelete(done); // 评分（！＝0）不能删除
-		me.fireEvent('done',done,fullDone,me.getRecord(), me);
+		me.fireEvent('done',done,fullDone,me.getParentRecord(), me);
 	},
 	
 	onZoom: function(e){

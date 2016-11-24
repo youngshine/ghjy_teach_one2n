@@ -4,17 +4,16 @@ Ext.define('Youngshine.model.Topic', {
 
     config: {
         fields: [
-			{name: 'topicID'}, 
+			{name: 'one2ntopicID'}, 
 			{name: 'courseNo'}, //学生报读知识点记录，包括student+zsd 
-			{name: 'zsdID'}, 
-			{name: 'gid'},  //新题库题目id
-			//{name: 'studentID'}, //对应个体学生的
-			//{name: 'zsdID'}, //对应的报读唯一知识点
+			{name: 'zsdID'}, //对应的报读唯一知识点
 			//{name: 'zsdName'}, 
 			{name: 'subjectID'}, //学科
 			{name: 'subjectName'},
+			//{name: 'topicID'}, 
+			{name: 'gid'},  //新题库题目id
+			//{name: 'studentID'}, //对应个体学生的
 			{name: 'done'}, //题目做完
-			{name: 'done_pt'}, //得分，平均分2，为中等，高的推高分题
 			{name: 'tested'}, //是否测试
 			{name: 'passed'}, //通过
 			
