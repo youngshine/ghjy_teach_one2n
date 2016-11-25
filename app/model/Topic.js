@@ -7,7 +7,7 @@ Ext.define('Youngshine.model.Topic', {
 			{name: 'one2ntopicID'}, 
 			{name: 'courseNo'}, //学生报读知识点记录，包括student+zsd 
 			{name: 'zsdID'}, //对应的报读唯一知识点
-			//{name: 'zsdName'}, 
+			{name: 'zsdName'}, 
 			{name: 'subjectID'}, //学科
 			{name: 'subjectName'},
 			//{name: 'topicID'}, 

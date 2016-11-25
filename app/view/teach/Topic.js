@@ -83,6 +83,20 @@ Ext.define('Youngshine.view.teach.Topic', {
 	// 未做提，取原始level，做完题算平均分
 	onFetch: function(){
 		var me = this;
+		var level = 2 // 默认出题题目难度
+		var	done = 0 // 做题成绩0123
+		var store = me.getStore();
+		
+		for(var i=0;i<store.getCount();i++){
+			if(store.getAt(i).get('done')==0){
+				Ext.toast('当前题目未做完',3000); 
+				return false
+			}
+			done += parseInt( store.getAt(i).get('done') )
+		}
+		// 已经做题，根据成绩计算要出题的难度level
+		if(done > 0) 
+			level = Math.floor( done/(store.getCount()) ); //得出做题平均分parseInt
 		
 		var overlay = Ext.Viewport.add({
 			xtype: 'panel', itemId: 'modalZsd',
@@ -102,8 +116,6 @@ Ext.define('Youngshine.view.teach.Topic', {
 	        	title: '选择题目的属性',
 				ui: 'light',
 				items: [{
-					xtype: 'spacer'
-				},{
 					text: '确定',
 					ui: 'confirm',
 					action: 'ok',
@@ -125,6 +137,7 @@ Ext.define('Youngshine.view.teach.Topic', {
 					itemId: 'grade',
 					displayField: 'text',
 					valueField: 'value',
+					value: me.getParentRecord().data.gradeID, //defalut
 	                options: [
 	                    {text: '九年级',  value: 9},
 	                    {text: '八年级', value: 8},
@@ -144,6 +157,7 @@ Ext.define('Youngshine.view.teach.Topic', {
 					listeners: {
 						change: function(){
 							var panel = this.up('panel[itemId=modalZsd]')
+							console.log('grade change')
 							panel.down('selectfield[itemId=zsd]').setDisabled(false)
 							panel.down('selectfield[itemId=zsd]').reset();
 							panel.down('button[action=ok]').setDisabled(true);
@@ -240,11 +254,11 @@ Ext.define('Youngshine.view.teach.Topic', {
 					"gradeID"  : gradeID
 				}
 				console.log(obj)
-				var store = Ext.getStore('Zsd'); 
-				store.removeAll(true)
-				store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+				var storeZsd = Ext.getStore('Zsd'); 
+				storeZsd.removeAll(true)
+				storeZsd.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
 					'readZsdList.php?data='+JSON.stringify(obj) );
-				store.load({ //异步async
+				storeZsd.load({ //异步async
 					callback: function(records, operation, success){
 						if (success){
 							console.log(records[0])
@@ -259,72 +273,26 @@ Ext.define('Youngshine.view.teach.Topic', {
 		
 		overlay.show()
 		
-		// 选择某个年级学科的知识点
-		function loadZsd(subjectID,gradeID){
-			var obj = {
-				"subjectID": subjectID,
-				"gradeID"  : gradeID
-			}
-			console.log(obj)
-			var store = Ext.getStore('Zsd'); 
-			store.removeAll(true)
-			store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
-				'readZsdList.php?data='+JSON.stringify(obj) );
-			store.load({ //异步async
-				callback: function(records, operation, success){
-					if (success){
-						console.log(records[0])
-						//Ext.Viewport.setMasked(false);
-						//Ext.Viewport.setActiveItem(me.student);
-						//me.down('selectfield[itemId=zsd]').reset();
-					};
-				}   		
-			});
+		// 计算当前5练习题的成绩，智能推出难度题目，默认2中
+		overlay.down('selectfield[itemId=level]').setValue(level)
+		
+		// defalut 默认的年级学科（来自抱牍一对多课程）
+		var subjectID = me.getParentRecord().data.subjectID
+		var gradeID = me.getParentRecord().data.gradeID
+		overlay.onZsd(subjectID,gradeID)
+		
+		// default 默认的当前练习题目的知识点，如果没有练习题，则无知识点默认值
+		if(store.getCount() > 0){			
+			// 手动设置知识点选择项
+			var zsdID = store.getData().getAt(0).get('zsdID'),
+				zsdName = store.getData().getAt(0).get('zsdName')
+			selectbox = overlay.down('selectfield[itemId=zsd]')
+			selectbox.setOptions([
+				{zsdID: zsdID, zsdName: zsdName}
+			])
+			selectbox.setValue(zsdID)
+			console.log(selectbox.getValue())		
 		}
-		
-		return
-		
-		var done = 0, //做完一组题对水平，以便自适应推题
-			store = me.getStore()
-
-		if(store.getCount()>99){
-			Ext.toast('练习已超过99题',3000);
-			return false
-		}
-		
-		// 学科数理化123，对应level_list数组012
-		var subjectID = parseInt(me.getRecord().data.subjectID)-1;
-		//学生报名的原始水平1、2、3列表，不同学科subjectID？？？
-		var level = me.getRecord().data.level_list.split(',')[subjectID];
-		console.log(level)
-		
-		for(var i=0;i<store.getCount();i++){
-			if(store.getAt(i).get('done')==0){
-				Ext.toast('当前题目未做完',3000);
-				return false
-			}
-			done += parseInt( store.getAt(i).get('done') )
-		}
-		
-		// 已经做题
-		if(done > 0) 
-			level = Math.floor( done/(store.getCount()) ); //得出做题平均分parseInt
-
-    	Ext.Msg.confirm('添加练习题',"随机添加5个自适应题目？",function(btn){	
-			if(btn == 'yes'){
-				var obj = {
-					"level": level,//该学科难度
-					"zsdID": me.getRecord().data.zsdID,
-					"subjectID": me.getRecord().data.subjectID,//知识点按学科分表
-					"studentstudyID": me.getRecord().data.studentstudyID,
-					"courseID": me.getRecord().data.courseID
-				}	
-				console.log(obj)
-				me.fireEvent('fetchTopic',obj)
-			}
-		});
-		
-
 	},
 	// 返回
 	onBack: function(){
@@ -332,7 +300,68 @@ Ext.define('Youngshine.view.teach.Topic', {
 	},
 	
 	onPDF: function(){
-		this.fireEvent('pdf',this.getRecord(),this)
+		var me = this;
+		//this.fireEvent('pdf',this.getRecord(),this)
+		
+		var obj = {
+			"subjectID": me.getParentRecord().data.subjectID,
+			"gradeID"  : me.getParentRecord().data.gradeID
+		}
+		console.log(obj)
+		var storeZsd = Ext.getStore('Zsd'); 
+		storeZsd.removeAll(true)
+		storeZsd.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readZsdList.php?data='+JSON.stringify(obj) );
+		storeZsd.load({ //异步async
+			callback: function(records, operation, success){
+				if (success){
+					console.log(records[0])
+				};
+			}   		
+		});
+		
+		var overlay = Ext.Viewport.add({
+			xtype: 'panel',
+			modal: true,
+			hideOnMaskTap: true,
+			centered: true,
+			width: 450,height: 450,
+			scrollable: true,
+			hidden: true,
+			layout: 'fit',
+			
+			//parentRecord: record, //传递父窗口参数：当前学生记录
+			
+	        items: [{	
+	        	xtype: 'toolbar',
+	        	docked: 'top',
+	        	title: '选择知识点',
+				ui: 'light'
+			},{
+				xtype: 'list',
+				//disableSelection: true,
+				onItemDisclosure: true,
+			    itemTpl: '{zsdName}',
+			    //data: [],
+				store: storeZsd,
+			}],	
+			
+			listeners: [{
+				delegate: 'list',
+				event: 'disclose',
+				fn: function( list, modalRecord ){ 
+					console.log('zsd list disclosure')
+					// 显示对应科目的测评题目
+					//var modal = list.up('panel')
+					console.log(modalRecord)
+					
+					this.destroy() 
+					
+					me.fireEvent('pdf',modalRecord,this)
+				}	
+			}]
+		})
+		overlay.show()
 	},
 	
 	// 拍照教学过程
@@ -361,6 +390,7 @@ Ext.define('Youngshine.view.teach.Topic', {
 		} 
 		this.fireEvent('test', this.getRecord(), this)
 	},	
+	
 	// 做对（2，3）十题，可以通过
 	onPass: function(){
 		var me = this;

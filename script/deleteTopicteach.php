@@ -10,16 +10,18 @@ require_once('db/database_connection.php');
 $req = new Request(array());
 $res = new Response();
 
-    $arr = $req->params;
-	$topicteachID = $arr->topicteachID;
-	//$query = "delete from `ghjy_topic-teach` where topicteachID = $topicteachID ";
-	$query = "UPDATE `ghjy_topic-teach` Set current=0 
-		where topicteachID = $topicteachID ";
-	$result = mysql_query($query) 
-		or die("Invalid query: deleteTopicteach current=0" . mysql_error());
-	$res->success = true;
-    $res->message = "删除选择例题topic-teach成功";
-	$res->data = array();
+$arr = $req->params;
+$one2ntopicID = $arr->one2ntopicID;
+
+//$query = "delete from `ghjy_topic-teach` where topicteachID = $topicteachID ";
+$query = "UPDATE `ghjy_one2n_topic` Set current=0 
+	Where one2ntopicID = $one2ntopicID ";
+$result = mysql_query($query) 
+	or die("Invalid query: delOne2nTopic update current=0" . mysql_error());
+$res->success = true;
+$res->message = "移除不合适练习题one2ntopic成功";
+$res->data = array();
 	
 echo $_GET['callback']."(".$res->to_json().")";
+
 ?>

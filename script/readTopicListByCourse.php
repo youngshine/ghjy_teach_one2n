@@ -21,10 +21,12 @@ if($subjectID==1){
 	$table = 'hx_chu_exam_question';
 } 
 
-$query = " SELECT a.*,b.content,b.answer,b.objective_answer 
+// 不合适的练习题current=0
+$query = " SELECT a.*,b.content,b.answer,b.objective_answer,b.level,c.zsdName   
 	From `ghjy_one2n_topic` a 
 	Join `$table` b On a.gid=b.gid 
-	Where a.courseNo = '$courseNo' 
+	Join `ghjy_zsd` c On (a.zsdID=c.zsdID And a.subjectID=c.subjectID)  
+	Where a.courseNo = '$courseNo' And a.current=1 
 	Order by a.created Desc ";
 
 $result = mysql_query($query) 

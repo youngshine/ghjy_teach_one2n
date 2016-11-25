@@ -4,6 +4,7 @@ Ext.define('Youngshine.model.Course', {
 
     config: {
         fields: [
+			{name: 'one2ncourseID'},
 			{name: 'courseNo'}, // 课时编号，group by
 			{name: 'timely'}, 
 			{name: 'hour'}, // 一对多课时数
@@ -14,6 +15,7 @@ Ext.define('Youngshine.model.Course', {
 			{name: 'subjectID'}, 
 			{name: 'subjectName'}, 
 			{name: 'gradeID'}, 
+			{name: 'gradeName'}, 
 			//{name: 'studentID'}, 
 			//{name: 'studentName'}, 
 			//{name: 'wxID'}, //学生家长微信，公众号发模版消息

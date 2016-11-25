@@ -138,7 +138,7 @@ Ext.define('Youngshine.view.teach.TopicShow',{
 				handler: function(){
 					actionSheet.hide();
 					Ext.Viewport.remove(actionSheet,true); //移除dom
-					me.fireEvent('del', me.me.getParentRecord()(),me);
+					me.fireEvent('del', me.getParentRecord(),me);
 					//window.location ='tel:xxxxxxx';
 					//window.location = 'tel:' + phone;
 				}

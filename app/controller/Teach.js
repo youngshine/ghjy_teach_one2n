@@ -174,13 +174,13 @@ Ext.define('Youngshine.controller.Teach', {
 		console.log(rec);
 		var me = this;
 		
-		var file = '';
+		var file = 'http://teach1to1-10060757.cos.myqcloud.com/teachPDF/';
 		if(rec.data.subjectID==1){
-			file = '../PDF/sx/'
+			file = '../sx/'
 		}else if(rec.data.subjectID==2){
-			file = '../PDF/wl/'
+			file += 'wl/'
 		}else if(rec.data.subjectID==2){
-			file = '../PDF/hx/'
+			file += 'hx/'
 		}
 		file += rec.data.PDF
 		console.log(file)
@@ -193,7 +193,7 @@ Ext.define('Youngshine.controller.Teach', {
 	
 	pdfBack: function(oldView){		
 		var me = this;
-		Ext.Viewport.setActiveItem(me.topicteach)
+		Ext.Viewport.setActiveItem(me.topic)
 		Ext.Viewport.remove(me.pdf,true)
 	},
 	
@@ -248,7 +248,7 @@ Ext.define('Youngshine.controller.Teach', {
 				if (result.success){ // 返回值有success成功
 					//console.log(result.data)
 					// 直接添加到后台数据表ghjy_topic-teach，最新在最上面
-					Ext.getStore('Topic-teach').load()
+					Ext.getStore('Topic').load()
 					//store.add(result.data).. store.insert()
 					//console.log(store.data)		
 				}else{
@@ -256,7 +256,6 @@ Ext.define('Youngshine.controller.Teach', {
 				}
 			},
 		});
-
 	},	
 	
 	topicItemtap: function(list,index,item,record,e){
@@ -280,7 +279,7 @@ Ext.define('Youngshine.controller.Teach', {
 		        items: [{	
 		        	xtype: 'toolbar',
 		        	docked: 'top',
-					ui: 'gray',
+					ui: 'light',
 		        	title: '题目',
 				},{
 					xtype: 'panel',
@@ -299,7 +298,7 @@ Ext.define('Youngshine.controller.Teach', {
 		Ext.Viewport.remove(me.topicshow,true)
 	},	
 	
-	topicshowDelete: function(record,view){
+	topicshowDelete: function(record,oldView){
 		var me = this;
 		Ext.Viewport.setMasked({xtype:'loadmask',message:'正在删除'});
 		Ext.data.JsonP.request({
