@@ -174,9 +174,9 @@ Ext.define('Youngshine.controller.Teach', {
 		console.log(rec);
 		var me = this;
 		
-		var file = 'http://teach1to1-10060757.cos.myqcloud.com/teachPDF/';
+		var file = 'http://teach1to1-10060757.file.myqcloud.com/teachPDF/';
 		if(rec.data.subjectID==1){
-			file = '../sx/'
+			file = '../PDF/sx/'
 		}else if(rec.data.subjectID==2){
 			file += 'wl/'
 		}else if(rec.data.subjectID==2){

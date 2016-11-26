@@ -83,8 +83,8 @@ Ext.define('Youngshine.view.teach.Topic', {
 	// 未做提，取原始level，做完题算平均分
 	onFetch: function(){
 		var me = this;
-		var level = 2 // 默认出题题目难度
-		var	done = 0 // 做题成绩0123
+		var level = 2, // 默认出题题目难度
+			done = 0 // 做题成绩0123
 		var store = me.getStore();
 		
 		for(var i=0;i<store.getCount();i++){
@@ -95,8 +95,7 @@ Ext.define('Youngshine.view.teach.Topic', {
 			done += parseInt( store.getAt(i).get('done') )
 		}
 		// 已经做题，根据成绩计算要出题的难度level
-		if(done > 0) 
-			level = Math.floor( done/(store.getCount()) ); //得出做题平均分parseInt
+		if(done > 0) level = Math.floor( done/(store.getCount()) ); //得出做题平均分parseInt
 		
 		var overlay = Ext.Viewport.add({
 			xtype: 'panel', itemId: 'modalZsd',
@@ -113,7 +112,7 @@ Ext.define('Youngshine.view.teach.Topic', {
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
-	        	title: '选择题目的属性',
+	        	title: '添加5个练习题',
 				ui: 'light',
 				items: [{
 					text: '确定',
@@ -121,7 +120,8 @@ Ext.define('Youngshine.view.teach.Topic', {
 					action: 'ok',
 					disabled: true,
 					handler: function(btn){
-						btn.up('panel[itemId=modalZsd]').onOk(btn)
+						//btn.up('panel[itemId=modalZsd]').onOk(btn) // build后不行
+						getTopic()
 					}
 				}]
 			},{
@@ -162,9 +162,11 @@ Ext.define('Youngshine.view.teach.Topic', {
 							panel.down('selectfield[itemId=zsd]').reset();
 							panel.down('button[action=ok]').setDisabled(true);
 							//加载对应的知识点
-							var subjectID = me.getParentRecord().data.subjectID,
-								gradeID = this.getValue()
-							panel.onZsd(subjectID,gradeID)
+							var obj = {
+								subjectID : me.getParentRecord().data.subjectID,
+								gradeID : this.getValue()
+							}	
+							getZsd(obj)
 						},					
 					},
 				},{
@@ -203,16 +205,12 @@ Ext.define('Youngshine.view.teach.Topic', {
 			}],	
 			
 			onOk: function(btn){
-				//btn.setDisabled(true); //避免重复tap
+				btn.setDisabled(true); //避免重复tap
 				
 				var level = btn.up('panel').down('selectfield[itemId=level]').getValue(),
 					zsdID = btn.up('panel').down('selectfield[itemId=zsd]').getValue(),
 					subjectID = me.getParentRecord().data.subjectID,
 					courseNo = me.getParentRecord().data.courseNo
-
-				if (level==null || level==''){
-					Ext.toast('请选择题目难度',3000); return;
-				}
 				
 				Ext.Viewport.setMasked({xtype:'loadmask',message:'添加自适应题目'});
 				
@@ -232,54 +230,24 @@ Ext.define('Youngshine.view.teach.Topic', {
 					callbackKey: 'callback',
 					//timeout: 9000,
 				    success: function(result){
-				        console.log(result)
-						// process server response here
-						//btnSave.setText('创建上课成功')
-						Ext.getStore('Topic').insert(0,result.data) //load(); //reload
+						console.log(result)
+						Ext.getStore('Topic').load(); //reload .insert(0,result.data)
 						//setTimeout(me.overlay.destroy(), 3000 )
 						setTimeout(function(){ //延迟，才能滚动到最后4-1
 							//me.overlay.destroy();
 							overlay.destroy();
 						},100);
-						
 						Ext.Viewport.setMasked(false)
 				    }
 				});
 			},
-			
-			// 选择某个年级学科的知识点
-			onZsd: function(subjectID,gradeID){
-				var obj = {
-					"subjectID": subjectID,
-					"gradeID"  : gradeID
-				}
-				console.log(obj)
-				var storeZsd = Ext.getStore('Zsd'); 
-				storeZsd.removeAll(true)
-				storeZsd.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
-					'readZsdList.php?data='+JSON.stringify(obj) );
-				storeZsd.load({ //异步async
-					callback: function(records, operation, success){
-						if (success){
-							console.log(records[0])
-							//Ext.Viewport.setMasked(false);
-							//Ext.Viewport.setActiveItem(me.student);
-							//me.down('selectfield[itemId=zsd]').reset();
-						};
-					}   		
-				});
-			}
 		})
 		
 		overlay.show()
+		//Ext.Viewport.add(overlay)
 		
 		// 计算当前5练习题的成绩，智能推出难度题目，默认2中
 		overlay.down('selectfield[itemId=level]').setValue(level)
-		
-		// defalut 默认的年级学科（来自抱牍一对多课程）
-		var subjectID = me.getParentRecord().data.subjectID
-		var gradeID = me.getParentRecord().data.gradeID
-		overlay.onZsd(subjectID,gradeID)
 		
 		// default 默认的当前练习题目的知识点，如果没有练习题，则无知识点默认值
 		if(store.getCount() > 0){			
@@ -293,7 +261,69 @@ Ext.define('Youngshine.view.teach.Topic', {
 			selectbox.setValue(zsdID)
 			console.log(selectbox.getValue())		
 		}
+		
+		// defalut 默认的年级学科（来自抱牍一对多课程）
+		var obj = {
+			subjectID : me.getParentRecord().data.subjectID,
+			gradeID : me.getParentRecord().data.gradeID
+		}
+		getZsd(obj)
+		
+		// 获得某个年级学科的知识点, 公用
+		function getZsd(obj){
+			console.log(obj)
+			var storeZsd = Ext.getStore('Zsd'); 
+			storeZsd.removeAll(true)
+			storeZsd.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+				'readZsdList.php?data='+JSON.stringify(obj) );
+			storeZsd.load({ //异步async
+				callback: function(records, operation, success){
+					if (success){
+						console.log(records[0])
+					};
+				}   		
+			});
+		}
+		
+		function getTopic(){
+			overlay.down('button[action=ok]').setDisabled(true); //避免重复tap
+			
+			var level = overlay.down('selectfield[itemId=level]').getValue(),
+				zsdID = overlay.down('selectfield[itemId=zsd]').getValue(),
+				subjectID = me.getParentRecord().data.subjectID,
+				courseNo = me.getParentRecord().data.courseNo
+			
+			Ext.Viewport.setMasked({xtype:'loadmask',message:'添加自适应题目'});
+			
+			var obj = {
+				"level"    : level,
+				"zsdID"    : zsdID,
+				"subjectID": subjectID,
+				"courseNo" : courseNo,
+			}
+			console.log(obj)
+			
+			Ext.data.JsonP.request({
+			    url: Youngshine.app.getApplication().dataUrl + 'createOne2nTopic.php',
+			    params: {
+					data: JSON.stringify(obj)
+			    },
+				callbackKey: 'callback',
+				//timeout: 9000,
+			    success: function(result){
+					console.log(result)
+					Ext.getStore('Topic').load(); //reload .insert(0,result.data)
+					//setTimeout(me.overlay.destroy(), 3000 )
+					setTimeout(function(){ //延迟，才能滚动到最后4-1
+						//me.overlay.destroy();
+						overlay.destroy();
+					},100);
+					Ext.Viewport.setMasked(false)
+			    }
+			});
+		}
 	},
+	
 	// 返回
 	onBack: function(){
 		this.fireEvent('back',this)
@@ -302,23 +332,6 @@ Ext.define('Youngshine.view.teach.Topic', {
 	onPDF: function(){
 		var me = this;
 		//this.fireEvent('pdf',this.getRecord(),this)
-		
-		var obj = {
-			"subjectID": me.getParentRecord().data.subjectID,
-			"gradeID"  : me.getParentRecord().data.gradeID
-		}
-		console.log(obj)
-		var storeZsd = Ext.getStore('Zsd'); 
-		storeZsd.removeAll(true)
-		storeZsd.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
-			'readZsdList.php?data='+JSON.stringify(obj) );
-		storeZsd.load({ //异步async
-			callback: function(records, operation, success){
-				if (success){
-					console.log(records[0])
-				};
-			}   		
-		});
 		
 		var overlay = Ext.Viewport.add({
 			xtype: 'panel',
@@ -335,15 +348,56 @@ Ext.define('Youngshine.view.teach.Topic', {
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
-	        	title: '选择知识点',
-				ui: 'light'
+	        	//title: '选择知识点',
+				ui: 'light',
+				items: [{
+					xtype: 'selectfield',
+					width: 285,
+					label: 'PDF教案：',
+					labelWidth: 85,
+					itemId: 'grade',
+					displayField: 'text',
+					valueField: 'value',
+					value: me.getParentRecord().data.gradeID, //defalut
+	                options: [
+	                    {text: '九年级',  value: 9},
+	                    {text: '八年级', value: 8},
+	                    {text: '七年级',  value: 7},
+						{text: '六年级',  value: 6},
+	                    {text: '五年级',  value: 5},
+	                    {text: '四年级', value: 4},
+	                    {text: '三年级',  value: 3},
+	                    {text: '二年级',  value: 2},
+	                    {text: '一年级', value: 1},
+	                ],
+					//autoSelect: false, 	
+					defaultPhonePickerConfig: {
+						doneButton: '确定',
+						cancelButton: '取消'
+					},
+					listeners: {
+						change: function(){
+							var panel = this.up('panel[itemId=modalZsd]')
+							console.log('grade change')
+							//panel.down('selectfield[itemId=zsd]').setDisabled(false)
+							//panel.down('selectfield[itemId=zsd]').reset();
+							//panel.down('button[action=ok]').setDisabled(true);
+							//加载对应的知识点
+							var obj = {
+								subjectID : me.getParentRecord().data.subjectID,
+								gradeID : this.getValue()
+							} 						
+							loadZsd(obj)
+						},					
+					},
+				}]
 			},{
 				xtype: 'list',
 				//disableSelection: true,
 				onItemDisclosure: true,
 			    itemTpl: '{zsdName}',
 			    //data: [],
-				store: storeZsd,
+				store: "Zsd",
 			}],	
 			
 			listeners: [{
@@ -359,9 +413,33 @@ Ext.define('Youngshine.view.teach.Topic', {
 					
 					me.fireEvent('pdf',modalRecord,this)
 				}	
-			}]
+			}],
+			
+			// onZsd
 		})
 		overlay.show()
+		
+		
+		var obj = {
+			"subjectID": me.getParentRecord().data.subjectID,
+			"gradeID"  : me.getParentRecord().data.gradeID
+		}
+		loadZsd(obj)
+		
+		function loadZsd(obj){
+			console.log(obj)
+			var storeZsd = Ext.getStore('Zsd'); 
+			storeZsd.removeAll(true)
+			storeZsd.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+				'readZsdList.php?data='+JSON.stringify(obj) );
+			storeZsd.load({ //异步async
+				callback: function(records, operation, success){
+					if (success){
+						console.log(records[0])
+					};
+				}   		
+			});
+		}
 	},
 	
 	// 拍照教学过程
